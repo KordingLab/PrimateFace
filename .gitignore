@@ -58,6 +58,14 @@ demos/mmdet_checkpoint.pth
 demos/mmpose_checkpoint.pth
 demos/test_output/
 demos/results/
+demos/notebooks/*_output/
+demos/notebooks/*_demo/
+demos/notebooks/*_results/
+demos/notebooks/embeddings*.npz
+demos/notebooks/figures_*
+
+# Temp demo images
+*_demo.jpg
 
 # Downloaded YOLO models
 yolov*.pt
@@ -127,3 +135,5 @@ docs/gradio/primateface_server.py
 AGENTS.md
 
 
+results/
+analysis/

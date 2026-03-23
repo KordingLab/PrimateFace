@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "primateface"
-version = "0.1.0"
+version = "0.2.0"
 description = "A Machine Learning Resource for Automated Face Analysis in Human and Non-human Primates"
 readme = "README.md"
 license = {text = "MIT"}
@@ -42,6 +42,7 @@ dependencies = [
     "json-tricks>=3.15.0",
     "natsort>=7.0.0",
     "pycocotools>=2.0.0",
+    "huggingface-hub>=0.20.0",
 ]
 
 [project.optional-dependencies]
@@ -80,6 +81,24 @@ dinov2 = [
 #     "sleap-io>=0.0.13",
 # ]
 
+# Face embedding (ArcFace re-identification)
+embedding = [
+    "insightface>=0.7.0",
+    "onnxruntime>=1.14.0",
+]
+
+# MegaDescriptor wildlife re-ID embedding
+megadescriptor = [
+    "timm>=0.9.0",
+]
+
+# Framework interop (SLEAP, NWB, DLC import)
+interop = [
+    "sleap-io>=0.2.0",
+    "pynwb>=2.0.0",
+    "ndx-pose>=0.2.0",
+]
+
 # Landmark converter (optional GNN support)
 landmark_gnn = [
     "torch-geometric>=2.0.0",
@@ -101,7 +120,7 @@ dev = [
     "mypy>=0.900",
     "jupyter>=1.0.0",
     "ipykernel>=6.0.0",
-    "gdown>=4.0.0",  # For downloading models from Google Drive
+    "gdown>=4.0.0",  # Legacy: for downloading demo assets from Google Drive
 ]
 
 # Complete installation (excludes framework-specific: mmlab, dlc, sleap)
@@ -121,17 +140,21 @@ all = [
     "torch-geometric>=2.0.0",
 ]
 
+[project.scripts]
+primateface = "primateface.cli:main"
+
 [project.urls]
 Homepage = "https://primateface.studio"
 Documentation = "https://docs.primateface.studio"
 Repository = "https://github.com/KordingLab/PrimateFace"
 "Bug Reports" = "https://github.com/KordingLab/PrimateFace/issues"
 Paper = "https://www.biorxiv.org/content/10.1101/2025.08.12.669927"
-"Hugging Face" = "https://huggingface.co/datasets/fparodi/PrimateFace"
+"Hugging Face Dataset" = "https://huggingface.co/datasets/fparodi/PrimateFace"
+"Hugging Face Models" = "https://huggingface.co/fparodi/primateface-models"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["primateface*", "dataset*", "demos*", "dinov2*", "evals*", "gui*", "landmark_converter*"]
+include = ["primateface*", "analysis*", "demos*", "dinov2*", "evals*", "gui*", "landmark_converter*"]
 exclude = ["tests*", "docs*", "notebooks*"]
 
 [tool.setuptools.package-data]

@@ -7,16 +7,16 @@ Run with: python -m pytest demos/test_demos.py
 import sys
 import unittest
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple  # noqa: F401
 
 import numpy as np
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from demos import constants
-from demos.smooth_utils import MedianSavgolSmoother
-from demos.viz_utils import FastPoseVisualizer
+from primateface import _constants as constants
+from primateface._smooth import MedianSavgolSmoother
+from primateface._viz import FastPoseVisualizer
 
 
 class TestConstants(unittest.TestCase):
@@ -178,34 +178,59 @@ class TestFastPoseVisualizer(unittest.TestCase):
         self.assertEqual(viz.TEXT_COLOR, constants.TEXT_COLOR_BGR)
 
 
-class TestImports(unittest.TestCase):
-    """Test that all modules can be imported."""
-    
-    def test_import_constants(self):
-        """Test importing constants module."""
-        from demos import constants
-        self.assertIsNotNone(constants)
-    
-    def test_import_smooth_utils(self):
-        """Test importing smooth_utils module."""
-        from demos.smooth_utils import MedianSavgolSmoother
-        self.assertIsNotNone(MedianSavgolSmoother)
-    
-    def test_import_viz_utils(self):
-        """Test importing viz_utils module."""
-        from demos.viz_utils import FastPoseVisualizer
-        self.assertIsNotNone(FastPoseVisualizer)
-    
-    def test_import_process(self):
-        """Test importing process module (without models)."""
-        try:
-            from demos.process import PrimateFaceProcessor
-            # Will fail at runtime without models, but import should work
-        except ImportError as e:
-            if "mmdet" in str(e) or "mmpose" in str(e):
-                self.skipTest("MMDetection/MMPose not installed")
-            else:
-                raise
+class TestModelRegistry(unittest.TestCase):
+    """Test model registry consistency."""
+
+    def test_models_dict_consistency(self):
+        """MODELS dict should be derived from MODEL_ENTRIES."""
+        from primateface._model_registry import MODELS, MODEL_ENTRIES
+        self.assertEqual(len(MODELS), len(MODEL_ENTRIES))
+        for entry in MODEL_ENTRIES:
+            self.assertIn(entry.local_name, MODELS)
+            self.assertEqual(
+                MODELS[entry.local_name],
+                (entry.hf_subfolder, entry.hf_filename),
+            )
+
+    def test_all_entries_valid_task(self):
+        """All entries should have a valid task."""
+        from primateface._model_registry import MODEL_ENTRIES
+        valid_tasks = {"detection", "pose"}
+        for entry in MODEL_ENTRIES:
+            self.assertIn(entry.task, valid_tasks)
+
+    def test_all_entries_valid_file_type(self):
+        """All entries should have a valid file type."""
+        from primateface._model_registry import MODEL_ENTRIES
+        valid_types = {"config", "checkpoint"}
+        for entry in MODEL_ENTRIES:
+            self.assertIn(entry.file_type, valid_types)
+
+    def test_det_pose_partition(self):
+        """DET_FILES + POSE_FILES should cover all files."""
+        from primateface._model_registry import DET_FILES, POSE_FILES, LOCAL_FILENAMES
+        self.assertEqual(
+            sorted(DET_FILES + POSE_FILES),
+            sorted(LOCAL_FILENAMES),
+        )
+
+    def test_hf_repo_id_format(self):
+        """HF repo ID should be in org/repo format."""
+        from primateface._model_registry import HF_REPO_ID
+        self.assertIn("/", HF_REPO_ID)
+        self.assertEqual(HF_REPO_ID, "fparodi/primateface-models")
+
+    def test_get_model_entry(self):
+        """get_model_entry should return the correct entry."""
+        from primateface._model_registry import get_model_entry
+        det_ckpt = get_model_entry("detection", "checkpoint")
+        self.assertEqual(det_ckpt.local_name, "mmdet_checkpoint.pth")
+
+        pose_cfg = get_model_entry("pose", "config")
+        self.assertEqual(pose_cfg.local_name, "mmpose_config.py")
+
+        with self.assertRaises(KeyError):
+            get_model_entry("gaze", "checkpoint")
 
 
 def create_dummy_instances():

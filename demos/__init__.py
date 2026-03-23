@@ -1,37 +1,14 @@
-"""PrimateFace demonstration and example scripts.
+"""PrimateFace demonstration scripts and notebooks.
 
-This package contains demo scripts and utilities for PrimateFace:
-- Unified processing for videos and images
-- Primate genus classification 
-- COCO annotation visualization
-- Utility modules for smoothing and visualization
+Core functionality has moved to the ``primateface`` package::
+
+    import primateface
+    pf = primateface.PrimateFace()
+    faces = pf.analyze("image.jpg")
+
+For low-level access to the processor, smoother, or visualizer::
+
+    from primateface._processor import PrimateFaceProcessor
+    from primateface._smooth import MedianSavgolSmoother
+    from primateface._viz import FastPoseVisualizer
 """
-
-from .constants import (
-    DEFAULT_BBOX_THR,
-    DEFAULT_KPT_THR,
-    DEFAULT_NMS_THR,
-    IMAGE_EXTENSIONS,
-    PRIMATE_GENERA,
-    VIDEO_EXTENSIONS,
-)
-from .process import PrimateFaceProcessor
-from .smooth_utils import MedianSavgolSmoother
-from .viz_utils import FastPoseVisualizer
-
-__all__ = [
-    # Main processor
-    'PrimateFaceProcessor',
-    # Utilities
-    'MedianSavgolSmoother',
-    'FastPoseVisualizer',
-    # Constants
-    'DEFAULT_BBOX_THR',
-    'DEFAULT_KPT_THR',
-    'DEFAULT_NMS_THR',
-    'IMAGE_EXTENSIONS',
-    'VIDEO_EXTENSIONS',
-    'PRIMATE_GENERA',
-]
-
-__version__ = '0.1.0'

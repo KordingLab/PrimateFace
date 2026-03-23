@@ -56,9 +56,6 @@ nav:
     - Decision Tree: getting-started/decision-tree.md
   - Tutorials:
     - Overview: tutorials/index.md
-    - Lemur Time-Stamping: tutorials/lemur_timestamping.md
-    - Macaque Recognition: tutorials/macaque_recognition.md
-    - Gaze Following: tutorials/gaze_following.md
   - User Guide:
     - Core Workflows:
       - Overview: user-guide/core-workflows/index.md

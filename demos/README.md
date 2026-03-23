@@ -25,11 +25,20 @@ mim install "mmpose==1.3.2" --trusted-host download.openmmlab.com --trusted-host
 
 ### 2. Download pretrained models
 
+Models are hosted on [HuggingFace](https://huggingface.co/fparodi/primateface-models) and download automatically in notebooks. To download manually:
+
 ```bash
 cd demos
 python download_models.py  # Downloads to current directory
-# Or specify output directory:
-python download_models.py ./models
+python download_models.py --force  # Re-download existing files
+```
+
+Or from Python:
+
+```python
+from demos.notebooks.notebook_utils import download_models_hf
+from pathlib import Path
+download_models_hf(Path("demos/"))
 ```
 
 ### 3. Run face detection and face landmark estimation examples
@@ -145,18 +154,19 @@ pytest test_demos.py
 
 ```
 demos/
-├── primateface_demo.py      # Main CLI interface
-├── process.py               # Core processing pipeline  
-├── classify_genus.py        # Species classification
-├── viz_utils.py            # Visualization utilities
-├── smooth_utils.py         # Temporal smoothing
-├── demo_docs.md           # Technical documentation
-└── notebooks/             # Interactive tutorials
+├── primateface_demo.py      # Demo CLI (low-level, manual config paths)
+├── download_models.py       # Model download from HuggingFace
+├── classify_genus.py        # Species classification via VLM
+├── test_demos.py            # Unit tests
+└── notebooks/               # 7 interactive tutorial notebooks
+    ├── quickstart.ipynb
+    ├── lemur_video_timestamping.ipynb
+    ├── macaque_face_recognition.ipynb
+    ├── howler_vocal_motor_coupling.ipynb
+    ├── infant_gaze_following.ipynb
+    ├── landmark_demographics.ipynb
+    └── facial_action_discovery.ipynb
 ```
 
-## Next Steps
-
-- Explore [notebooks/](notebooks/) for hands-on tutorials
-- Check [evals/](../evals/) for model evaluation
-- Use [gui/](../gui/) for interactive annotation
-- Try [dinov2/](../dinov2/) for feature extraction
+**Note:** Core modules (processor, model registry, constants, viz, smoothing) have moved
+to the `primateface/` package. Backward-compatible imports from `demos` still work.

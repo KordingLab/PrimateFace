@@ -8,29 +8,23 @@ Datasets, pretrained models, and data preparation guides.
 
 | Model | Framework | Task | Download | Size |
 |-------|-----------|------|----------|------|
-| Cascade R-CNN | MMDetection | Face Detection | [Link](#) | 280MB |
-| HRNet-W32 | MMPose | 68-pt Landmarks | [Link](#) | 110MB |
-| YOLOv8-Face | Ultralytics | Face Detection | [Link](#) | 45MB |
-| MLP Converter | PyTorch | 68→48 pts | [Link](#) | 2MB |
-| DINOv2-base | Transformers | Features | Auto | 340MB |
+| Cascade R-CNN R101-FPN | MMDetection | Face Detection | [HuggingFace](https://huggingface.co/fparodi/primateface-models/tree/main/detection) | 340 MB |
+| HRNetV2-W18-DARK | MMPose | 68-pt Landmarks | [HuggingFace](https://huggingface.co/fparodi/primateface-models/tree/main/pose) | 38 MB |
+| ViTPose-Base | MMPose | 68-pt Landmarks | [HuggingFace](https://huggingface.co/fparodi/primateface-models/tree/main/pose) | 1.2 GB |
 
 ### Quick Download
 
 ```bash
-# Download all models
+# Download all default models (Cascade R-CNN + HRNet)
 python demos/download_models.py
 
-# Download specific model
-python demos/download_models.py --model hrnet
+# Or use the Python API (auto-downloads on first use)
+import primateface
+pf = primateface.PrimateFace()  # downloads HRNet (default)
+pf = primateface.PrimateFace(pose_model="vitpose")  # downloads ViTPose
 ```
 
-### Model Specifications
-
-Coming soon - detailed specifications for each model including:
-- Architecture details
-- Training data
-- Performance metrics
-- Hardware requirements
+All models are hosted on [HuggingFace](https://huggingface.co/fparodi/primateface-models) and cached locally after first download.
 
 ## Datasets
 

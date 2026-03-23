@@ -93,3 +93,41 @@ What is the genus of this primate?<|im_end|>
         "prompt_template": "From the provided list, identify the single most likely genus for the primate in the image. Respond with only the genus name.\n\nGenus list: {genera_list}",
     }
 }
+
+# ---------------------------------------------------------------------------
+# Face alignment constants (68-point to 5-point landmark mapping)
+# ---------------------------------------------------------------------------
+import numpy as np  # noqa: E402
+
+LANDMARK_5PT_FROM_68_INDICES: Dict[str, any] = {
+    "left_eye_indices": list(range(36, 42)),
+    "right_eye_indices": list(range(42, 48)),
+    "nose_tip_idx": 30,
+    "left_mouth_corner_idx": 48,
+    "right_mouth_corner_idx": 54,
+}
+
+_TARGET_REGION_SIZE = 180.0
+_CANVAS_SIZE = 256.0
+_REFERENCE_SIZE = 112.0
+_SCALE = _TARGET_REGION_SIZE / _REFERENCE_SIZE
+_OFFSET = (_CANVAS_SIZE - _TARGET_REGION_SIZE) / 2.0
+
+TARGET_LANDMARKS_5PT_256X256: np.ndarray = np.array([
+    [38.2946 * _SCALE + _OFFSET, 51.6963 * _SCALE + _OFFSET],
+    [73.5318 * _SCALE + _OFFSET, 51.5014 * _SCALE + _OFFSET],
+    [56.0252 * _SCALE + _OFFSET, 71.7366 * _SCALE + _OFFSET],
+    [41.5493 * _SCALE + _OFFSET, 92.3655 * _SCALE + _OFFSET],
+    [70.7299 * _SCALE + _OFFSET, 92.2041 * _SCALE + _OFFSET],
+], dtype=np.float32)
+
+# ArcFace-standard 112x112 target landmarks (the unscaled originals)
+TARGET_LANDMARKS_5PT_112X112: np.ndarray = np.array([
+    [38.2946, 51.6963],
+    [73.5318, 51.5014],
+    [56.0252, 71.7366],
+    [41.5493, 92.3655],
+    [70.7299, 92.2041],
+], dtype=np.float32)
+
+ALIGNED_FACE_SIZE: int = 256

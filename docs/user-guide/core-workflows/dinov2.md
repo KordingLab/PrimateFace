@@ -450,9 +450,9 @@ pip install -e ".[dinov2]"
 ## Next Steps
 
 ### Practical Tutorials
-- [Lemur Face Visibility](../../tutorials/notebooks/App1_Lemur_time_stamping.ipynb) - Time series analysis with DINOv2
-- [Macaque Face Recognition](../../tutorials/notebooks/App2_Macaque_Face_Recognition.ipynb) - Face recognition using DINOv2 features
-- [Gaze Following Analysis](../../tutorials/notebooks/App4_Gaze_following.ipynb) - Attention-based gaze analysis
+- [Lemur Video Timestamping](../../tutorials/notebooks/lemur_video_timestamping.ipynb) - Time series analysis with DINOv2
+- [Macaque Face Recognition](../../tutorials/notebooks/macaque_face_recognition.ipynb) - Face recognition using DINOv2 features
+- [Macaque Gaze Following](../../tutorials/notebooks/macaque_gaze_following.ipynb) - Attention-based gaze analysis
 
 ### Core Workflows
 - [Pseudo-labeling Guide](pseudo-labeling.md) - Interactive annotation refinement

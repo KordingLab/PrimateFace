@@ -2,11 +2,9 @@
 
 ## PrimateFace Dataset
 
-**🚀 Coming Soon** - The full PrimateFace dataset will be released upon publication.
+The PrimateFace dataset is available on [HuggingFace](https://huggingface.co/datasets/fparodi/PrimateFace). Pretrained models are hosted at [fparodi/primateface-models](https://huggingface.co/fparodi/primateface-models).
 
-Explore our comprehensive primate face dataset, curated from multiple sources and annotated for research use. This open-access dataset will empower a wide range of facial analysis studies across diverse species.
-
-**For early access or collaboration opportunities, please contact:** [primateface@gmail.com](mailto:primateface@gmail.com)
+**For collaboration opportunities, please contact:** [primateface@gmail.com](mailto:primateface@gmail.com)
 
 ## Dataset Overview
 

@@ -328,6 +328,6 @@ Related
 
 For practical workflows and step-by-step guides, see:
 - [DINOv2-Guided Selection Guide](../user-guide/core-workflows/dinov2.md) - Complete workflows
-- [Lemur Face Visibility Tutorial](../tutorials/notebooks/App1_Lemur_time_stamping.ipynb) - Time series analysis
-- [Macaque Face Recognition Tutorial](../tutorials/notebooks/App2_Macaque_Face_Recognition.ipynb) - Face recognition
+- [Lemur Video Timestamping](https://github.com/KordingLab/PrimateFace/blob/main/demos/notebooks/lemur_video_timestamping.ipynb) - Time series analysis
+- [Macaque Face Recognition](https://github.com/KordingLab/PrimateFace/blob/main/demos/notebooks/macaque_face_recognition.ipynb) - Face recognition
 - [Pseudo-labeling Guide](../user-guide/core-workflows/pseudo-labeling.md) - Annotation workflows

@@ -1,82 +1,115 @@
 #!/usr/bin/env python
-"""
-Download PrimateFace models from Google Drive.
-Models include detection (MMDetection) and pose estimation (MMPose) checkpoints.
+"""Download PrimateFace models from Hugging Face Hub.
+
+Models include detection (MMDetection) and pose estimation (MMPose) checkpoints
+hosted at https://huggingface.co/fparodi/primateface-models.
 """
 
-import os
+import shutil
 import sys
 import argparse
 from pathlib import Path
 
 try:
-    import gdown
+    from primateface._model_registry import (
+        HF_REPO_ID, HF_REPO_URL, MODELS, LIBRARY_NAME, LIBRARY_VERSION,
+    )
 except ImportError:
-    print("Installing gdown...")
-    import subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "gdown"])
-    import gdown
+    # Fallback for standalone script execution
+    from model_registry import (  # type: ignore[no-redef]
+        HF_REPO_ID, HF_REPO_URL, MODELS, LIBRARY_NAME, LIBRARY_VERSION,
+    )
 
 
-def download_models(output_dir="."):
-    """Download all PrimateFace models to the specified directory."""
-    
-    # Model IDs from Google Drive
-    models = {
-        "mmdet_config.py": "1Y_YFdIDRcWQLI-gRiCnOrDxCptzCiiNp",
-        "mmdet_checkpoint.pth": "1zZ8S31zPHX5BWYKbnHxI1QOqP-fPnVFO",
-        "mmpose_config.py": "1sG2lLybRkLwmC0IkEqtEGuT1OxwXomju",
-        "mmpose_checkpoint.pth": "1Oa18Ty90bNE8fud0cuK3gZmPY_LAQo3Y",
-    }
-    
-    # Create output directory if needed
+def download_models(output_dir: str = ".", force: bool = False) -> bool:
+    """Download all PrimateFace models to the specified directory.
+
+    Args:
+        output_dir: Directory to save model files.
+        force: If True, re-download even if files already exist.
+
+    Returns:
+        True if all downloads succeeded.
+    """
+    try:
+        from huggingface_hub import hf_hub_download
+    except ImportError:
+        print(
+            "ERROR: huggingface_hub is required to download models.\n"
+            "Install with:  uv pip install huggingface-hub\n"
+            "  or:          pip install huggingface-hub",
+            file=sys.stderr,
+        )
+        return False
+
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    
-    print(f"Downloading models to: {output_path.absolute()}")
+
+    print(f"Downloading PrimateFace models to: {output_path.absolute()}")
+    print(f"Source: {HF_REPO_URL}")
     print()
-    
-    # Download each model
-    for filename, file_id in models.items():
-        output_file = output_path / filename
-        model_type = "MMDetection" if "mmdet" in filename else "MMPose"
-        file_type = "config" if filename.endswith(".py") else "checkpoint"
-        
-        print(f"Downloading {model_type} {file_type}...")
-        url = f"https://drive.google.com/uc?id={file_id}"
-        gdown.download(url, str(output_file), quiet=False)
-        print()
-    
-    # List downloaded files
-    print("✓ All models downloaded successfully!")
-    print("\nFiles downloaded:")
-    for filename in models.keys():
-        file_path = output_path / filename
+
+    for local_name, (subfolder, hf_filename) in MODELS.items():
+        output_file = output_path / local_name
+        model_type = "MMDetection" if "mmdet" in local_name else "MMPose"
+        file_type = "config" if local_name.endswith(".py") else "checkpoint"
+
+        if output_file.exists() and not force:
+            size_mb = output_file.stat().st_size / (1024 * 1024)
+            print(f"  Already exists: {local_name} ({size_mb:.1f} MB)")
+            continue
+
+        print(f"  Downloading {model_type} {file_type}: {local_name} ...")
+        cached_path = hf_hub_download(
+            repo_id=HF_REPO_ID,
+            filename=hf_filename,
+            subfolder=subfolder,
+            library_name=LIBRARY_NAME,
+            library_version=LIBRARY_VERSION,
+        )
+
+        # Copy from HF cache to the requested output directory
+        shutil.copy2(cached_path, str(output_file))
+
+        size_mb = output_file.stat().st_size / (1024 * 1024)
+        print(f"    Saved: {local_name} ({size_mb:.1f} MB)")
+
+    print()
+    print("All models downloaded successfully!")
+    print("\nFiles:")
+    for local_name in MODELS:
+        file_path = output_path / local_name
         if file_path.exists():
             size_mb = file_path.stat().st_size / (1024 * 1024)
-            print(f"  - {filename} ({size_mb:.1f} MB)")
-    
+            print(f"  - {local_name} ({size_mb:.1f} MB)")
+
     return True
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Download PrimateFace models from Google Drive")
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Download PrimateFace models from Hugging Face Hub"
+    )
     parser.add_argument(
         "output_dir",
         nargs="?",
         default=".",
-        help="Directory to save models (default: current directory)"
+        help="Directory to save models (default: current directory)",
     )
-    
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Re-download even if files already exist",
+    )
+
     args = parser.parse_args()
-    
+
     try:
-        download_models(args.output_dir)
+        success = download_models(args.output_dir, force=args.force)
+        return 0 if success else 1
     except Exception as e:
         print(f"Error downloading models: {e}", file=sys.stderr)
         return 1
-    
-    return 0
 
 
 if __name__ == "__main__":

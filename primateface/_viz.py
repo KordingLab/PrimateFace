@@ -15,24 +15,14 @@ from typing import Any, List, Optional, Tuple
 import cv2
 import numpy as np
 
-try:
-    from .constants import (
-        BBOX_THICKNESS,
-        DEFAULT_COLOR_BGR,
-        ID_COLORS_BGR,
-        KEYPOINT_RADIUS,
-        LINE_THICKNESS,
-        TEXT_COLOR_BGR,
-    )
-except ImportError:
-    from constants import (
-        BBOX_THICKNESS,
-        DEFAULT_COLOR_BGR,
-        ID_COLORS_BGR,
-        KEYPOINT_RADIUS,
-        LINE_THICKNESS,
-        TEXT_COLOR_BGR,
-    )
+from ._constants import (
+    BBOX_THICKNESS,
+    DEFAULT_COLOR_BGR,
+    ID_COLORS_BGR,
+    KEYPOINT_RADIUS,
+    LINE_THICKNESS,
+    TEXT_COLOR_BGR,
+)
 
 
 class FastPoseVisualizer:

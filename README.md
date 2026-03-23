@@ -18,6 +18,10 @@
   <a href="https://huggingface.co/datasets/fparodi/PrimateFace">
     <img src="https://img.shields.io/badge/🤗%20Hugging%20Face-Dataset-blue" alt="Hugging Face Dataset">
   </a>
+  &nbsp;&nbsp;
+  <a href="https://huggingface.co/fparodi/primateface-models">
+    <img src="https://img.shields.io/badge/🤗%20Hugging%20Face-Models-blue" alt="Hugging Face Models">
+  </a>
 </p>
 
 PrimateFace contains data, models, and tutorials for analyzing facial behavior across primates ([Parodi et al., 2025](https://www.biorxiv.org/content/10.1101/2025.08.12.669927)). 
@@ -37,24 +41,25 @@ Most of the PrimateFace modules require GPU access. If you don't have access to 
 
 2. Run through the [Google Colab Notebook tutorials](https://docs.primateface.studio/tutorials/) to explore several applications of PrimateFace.
 
-3. Clone this repository, install the dependencies, and run through the different modules (e.g., DINOv2, image and video demos, pseudo-labeling GUI, etc.) to fully utilize PrimateFace.
+3. Clone this repository, install the dependencies, download the pretrained models (`python demos/download_models.py`), and run through the different modules (e.g., DINOv2, image and video demos, pseudo-labeling GUI, etc.) to fully utilize PrimateFace.
 
 
 #### Structure
 This repository contains the code for PrimateFace, an ecosystem for facilitating cross-species primate face analysis.
 
 ```
-|--- dataset            # Explore PrimateFace data
-|--- demos              # Test models on your own data
-   |--- notebooks       # Google Colab notebooks for tutorials
-|--- dinov2             # Run and visualize DINOv2 features
-|--- docs               # Documentation for PrimateFace
-|--- evals              # Evaluate models across frameworks & datasets
-|--- gui                # Run pseudo-labeling GUI on your own data
-|--- landmark-converter # Train & apply keypoint landmark converters (68 -> 48 kpts)
-|--- pyproject.toml
-|--- README.md
-|--- environment.yml    # Unified conda environment for modules
+|--- primateface        # Core library (pip install primateface)
+   |--- analysis        #   Facial analysis (kinematics, symmetry, head pose, quality)
+   |--- io.py           #   Export to CSV, COCO, DLC, SLEAP, NWB
+   |--- cli.py          #   CLI: primateface analyze, primateface models
+|--- demos              # Demo scripts and tutorial notebooks
+   |--- notebooks       #   7 Jupyter notebooks (Quick Start, face rec, etc.)
+|--- dinov2             # DINOv2 feature extraction and visualization
+|--- docs               # Documentation
+|--- evals              # Model evaluation across frameworks & datasets
+|--- gui                # Pseudo-labeling GUI
+|--- landmark-converter # Keypoint landmark converters (68 <-> 48 kpts)
+|--- tests              # Unit tests (121 passing)
 ```
 
 
@@ -120,14 +125,15 @@ Note: You may see a harmless `RequestsDependencyWarning` about urllib3 versions 
 - [Documentation Homepage](https://docs.primateface.studio)
 - [Notebook Tutorials](https://docs.primateface.studio/tutorials/)
 
-| Tutorial | Open in Colab |
-|---------|----------------|
-| **1. Lemur Face Visibility Time-Stamping** | [![Open](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KordingLab/PrimateFace/blob/main/demos/notebooks/App1_Lemur_time_stamping.ipynb) |
-| **2. Rapid Macaque Face Recognition** | [![Open](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KordingLab/PrimateFace/blob/main/demos/notebooks/App2_Macaque_Face_Recognition.ipynb) |
-| **4. Human Infant Social Gaze Tracking** | [![Open](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KordingLab/PrimateFace/blob/main/demos/notebooks/App4_Gaze_following.ipynb) |
-| **3. Howler Vocal-Motor Coupling** | Coming soon |
-| **5. Data-Driven Discovery of Facial Actions** | Coming soon |
-| **6. Cross-Subject Neural Decoding of Facial Actions** | Coming soon |
+| Tutorial | Description |
+|----------|-------------|
+| [`quickstart`](demos/notebooks/quickstart.ipynb) | **Start here** — 3-line API, Face object, visualization, export |
+| [`lemur_video_timestamping`](demos/notebooks/lemur_video_timestamping.ipynb) | Detect and timestamp primate faces in video |
+| [`macaque_face_recognition`](demos/notebooks/macaque_face_recognition.ipynb) | Face recognition: ArcFace vs MegaDescriptor vs DINOv2 |
+| [`howler_vocal_motor_coupling`](demos/notebooks/howler_vocal_motor_coupling.ipynb) | Correlate facial kinematics with vocalizations |
+| [`macaque_gaze_following`](demos/notebooks/macaque_gaze_following.ipynb) | Gaze-following heuristic with Gazelle |
+| [`landmark_demographics`](demos/notebooks/landmark_demographics.ipynb) | Predict age and sex from facial landmarks |
+| [`facial_action_discovery`](demos/notebooks/facial_action_discovery.ipynb) | Unsupervised facial action discovery (MotionMapper-inspired) |
 
 
 #### References

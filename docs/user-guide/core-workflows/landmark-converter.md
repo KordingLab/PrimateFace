@@ -502,9 +502,9 @@ pytest test_landmark_converter.py -v
 ## Next Steps
 
 ### Practical Tutorials
-- [Lemur Face Visibility](../../tutorials/notebooks/App1_Lemur_time_stamping.ipynb) - Time series analysis with converted landmarks
-- [Macaque Face Recognition](../../tutorials/notebooks/App2_Macaque_Face_Recognition.ipynb) - Face recognition with converted data
-- [Gaze Following Analysis](../../tutorials/notebooks/App4_Gaze_following.ipynb) - Gaze analysis with converted points
+- [Lemur Video Timestamping](../../tutorials/notebooks/lemur_video_timestamping.ipynb) - Time series analysis with converted landmarks
+- [Macaque Face Recognition](../../tutorials/notebooks/macaque_face_recognition.ipynb) - Face recognition with converted data
+- [Macaque Gaze Following](../../tutorials/notebooks/macaque_gaze_following.ipynb) - Gaze analysis with converted points
 
 ### Core Workflows
 - [MMPose Training](mmpose-training.md) - Train models with converted data

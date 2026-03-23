@@ -1,0 +1,172 @@
+# PrimateFace
+
+> Cross-species primate face analysis toolkit: detection, 68-point landmarks, and behavioral features for 60+ primate genera.
+
+PrimateFace is an open-source Python library for automated primate face analysis. It detects primate faces, estimates 68-point facial landmarks (dlib standard), and computes derived features (head pose, kinematics, symmetry, quality) — all from a single `pip install primateface`. Models are hosted on HuggingFace and auto-downloaded on first use.
+
+- Paper: https://www.biorxiv.org/content/10.1101/2025.08.12.669927
+- GitHub: https://github.com/KordingLab/PrimateFace
+- Models: https://huggingface.co/fparodi/primateface-models
+- Dataset: https://huggingface.co/datasets/fparodi/PrimateFace
+- Docs: https://docs.primateface.studio
+
+## Quick Start
+
+```python
+import primateface
+
+pf = primateface.PrimateFace()            # auto-downloads models
+faces = pf.analyze("monkey.jpg")          # detect + 68-point landmarks
+print(faces[0].head_pose)                 # (yaw, pitch, roll)
+print(faces[0].kinematics)                # 14 geometric features
+PrimateFace.draw(faces, "monkey.jpg", output="result.jpg")
+```
+
+## Installation
+
+```bash
+pip install primateface
+# Also need MMDetection + MMPose for inference:
+pip install openmim
+mim install mmengine mmcv mmdet mmpose
+```
+
+## Face Object
+
+Each `Face` returned by `pf.analyze()` has:
+
+### Detection (always available)
+- `face.bbox` — `[x1, y1, x2, y2]` bounding box
+- `face.score` — detection confidence (0-1)
+- `face.keypoints` — `(68, 3)` array: `[x, y, confidence]` per landmark
+- `face.crop` — BGR face crop from source image
+
+### Analysis (lazy, computed on first access)
+- `face.head_pose` — `(yaw, pitch, roll)` in degrees
+- `face.kinematics` — dict of 14 features: mouth_aperture, mouth_width, mouth_aspect_ratio, right_eye_aperture, left_eye_aperture, right_brow_height, left_brow_height, face_height, face_width, face_aspect_ratio, jaw_width, nose_length, eye_to_mouth, interocular_distance
+- `face.symmetry` — fluctuating asymmetry score (0 = perfect)
+- `face.region_symmetry` — per-region FA: jaw, eyebrows, eyes, nose, mouth
+- `face.quality` — dict: blur, size, visibility, brightness, score
+- `face.mouth_aperture` — shortcut to kinematics
+- `face.eye_aperture` — `(right, left)` tuple
+- `face.brow_position` — `(right, left)` tuple
+- `face.interocular_distance` — pixels
+
+### Embedding (requires `embedding_model` opt-in)
+- `face.embedding` — 512-d (ArcFace) or 1536-d (MegaDescriptor)
+- `face.verify(other_face)` — `(is_same: bool, distance: float)`
+
+## Constructor Options
+
+```python
+pf = primateface.PrimateFace(
+    device="cuda:0",              # or "cpu"
+    pose_model="hrnet",           # "hrnet" (38MB, default) or "vitpose" (1.2GB)
+    embedding_model="arcface",    # None (default), "arcface", or "megadescriptor"
+    det_threshold=0.5,
+    nms_threshold=0.3,
+)
+```
+
+## Visualization
+
+```python
+PrimateFace.draw(faces, image, output="result.jpg",
+    draw_keypoints=True, draw_skeleton=True, draw_bbox=True, show_pose=False)
+```
+
+`show_pose=True` draws RGB axis arrows (X=red, Y=green, Z=blue) from nose tip.
+
+## Data Export (primateface.io)
+
+```python
+from primateface.io import to_csv, to_coco_json, to_dlc_csv, to_sleap, to_nwb, to_dataframe
+from primateface.io import from_coco_json, from_dlc, from_sleap, from_nwb
+
+to_csv(faces, "results.csv")                    # flat CSV with all features
+to_coco_json(faces, "results.json")             # COCO keypoints format
+to_dlc_csv(faces, "results_dlc.csv")            # DeepLabCut / Lightning Pose format
+to_sleap(faces, "results.slp")                  # SLEAP format (requires sleap-io)
+to_nwb(faces, "results.nwb")                    # NWB with ndx-pose (requires pynwb)
+df = to_dataframe(faces)                        # pandas DataFrame (239 columns)
+```
+
+## CLI
+
+```bash
+primateface analyze image.jpg                    # detect + print results
+primateface analyze image.jpg -o result.jpg      # save visualization
+primateface analyze ./images/ -o ./results/      # batch directory
+primateface models list                          # show available models
+```
+
+## Analysis Module
+
+```python
+from primateface.analysis.kinematics import extract_kinematics, extract_timeseries, detect_lip_smack
+from primateface.analysis.symmetry import facial_symmetry, per_region_symmetry
+from primateface.analysis.head_pose import estimate_head_pose
+from primateface.analysis.quality import face_quality
+from primateface.analysis.utils import interocular_distance, get_eye_centers
+```
+
+- `extract_kinematics(keypoints_68x2)` — 14 named features, normalized by IOD
+- `extract_timeseries(keypoints_sequence, fps)` — DataFrame with per-frame features
+- `detect_lip_smack(timeseries, fps)` — bandpass filter (3-8 Hz) on mouth aperture
+
+## Models (HuggingFace)
+
+Hosted at `fparodi/primateface-models`:
+
+| Model | Task | Size |
+|-------|------|------|
+| Cascade R-CNN R101-FPN | Face detection | 340 MB |
+| HRNetV2-W18-DARK | 68-point pose (default) | 38 MB |
+| ViTPose-Base | 68-point pose (alternative) | 1.2 GB |
+
+## Keypoint Format
+
+68-point dlib standard (COCO format: `[x, y, visibility] * 68`):
+- Jaw: 0-16 (17 points)
+- Right eyebrow: 17-21, Left eyebrow: 22-26
+- Nose bridge: 27-30, Nose base: 31-35
+- Right eye: 36-41, Left eye: 42-47
+- Outer mouth: 48-59, Inner mouth: 60-67
+
+All kinematic features are normalized by interocular distance (IOD).
+
+## Tutorials (Jupyter Notebooks)
+
+| Notebook | Description |
+|----------|-------------|
+| quickstart | 3-line API demo |
+| lemur_video_timestamping | Face detection in video for behavioral coding |
+| macaque_face_recognition | ArcFace vs MegaDescriptor vs DINOv2 benchmark |
+| howler_vocal_motor_coupling | Facial kinematics correlated with vocalizations |
+| macaque_gaze_following | Gaze-following with Gazelle model |
+| landmark_demographics | Age/sex prediction from landmarks (mandrill + chimp) |
+| facial_action_discovery | Unsupervised action discovery (wavelets + UMAP + watershed) |
+
+## Package Structure
+
+```
+primateface/
+    __init__.py          # PrimateFace, Face, io, __version__
+    core.py              # PrimateFace class
+    face.py              # Face dataclass with lazy analysis
+    io.py                # CSV, COCO, DLC, SLEAP, NWB export/import
+    cli.py               # CLI entry point
+    analysis/            # Landmark-derived features
+        kinematics.py    # 14 geometric measurements
+        symmetry.py      # Fluctuating asymmetry
+        head_pose.py     # Yaw/pitch/roll via solvePnP
+        quality.py       # Blur, visibility, composite score
+        constants.py     # Landmark indices, symmetric pairs
+    _processor.py        # MMDetection + MMPose inference
+    _model_registry.py   # HuggingFace model metadata
+    _model_manager.py    # Auto-download orchestration
+    _embedding.py        # ArcFace + MegaDescriptor backends
+    _constants.py        # Detection thresholds, primate genera
+    _viz.py              # OpenCV visualization
+    _smooth.py           # Temporal smoothing
+```

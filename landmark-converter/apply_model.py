@@ -14,7 +14,6 @@ import torch
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 from tqdm import tqdm
 import random
 from collections import defaultdict
@@ -49,7 +48,7 @@ def load_model_from_checkpoint(checkpoint_path, device):
     # Determine the number of keypoints the model was trained to predict.
     num_keypoints_to_predict = train_args.num_target_kpt - train_args.target_kpt_slice_idx
 
-    print(f"Instantiating KeypointConverterMLPWithAttention model...")
+    print("Instantiating KeypointConverterMLPWithAttention model...")
     model = KeypointConverterMLPWithAttention(
         num_source_kpts=train_args.num_source_kpt,
         num_target_kpts=num_keypoints_to_predict,
@@ -69,6 +68,12 @@ def predict_keypoints(model, source_kpts_xy, bbox, device):
     """
     Generates keypoint predictions for a single sample.
 
+    Auto-detects if the input keypoints are in a non-upright orientation
+    (e.g., from an upside-down camera) and canonicalizes to upright before
+    prediction. The converter model was trained on upright faces only and
+    is NOT rotation-invariant — it learns position-specific mappings in
+    bbox-normalized [0,1] space.
+
     Args:
         model (torch.nn.Module): The trained model.
         source_kpts_xy (np.ndarray): A numpy array of source keypoints, shape (num_kpts, 2).
@@ -78,20 +83,46 @@ def predict_keypoints(model, source_kpts_xy, bbox, device):
     Returns:
         np.ndarray: A numpy array of predicted keypoints in the original image scale.
     """
-    # Prepare inputs for the model
     source_kpts_tensor = torch.from_numpy(source_kpts_xy).unsqueeze(0).to(device).float()
     bbox_tensor = torch.from_numpy(bbox).unsqueeze(0).to(device).float()
 
-    # Normalize, flatten, and predict
     with torch.no_grad():
-        norm_source_kpts_xy = normalize_keypoints_bbox(source_kpts_tensor, bbox_tensor)
-        input_kpts_flat = norm_source_kpts_xy.contiguous().view(1, -1)
-        
+        norm_kpts = normalize_keypoints_bbox(source_kpts_tensor, bbox_tensor)
+
+        # Auto-detect orientation from keypoint layout.
+        # In upright faces: eyes (kpts 36-47) have smaller Y than mouth (kpts 48-67),
+        # and L-eye (36-41) has smaller X than R-eye (42-47).
+        # If both are inverted, the image is 180-degree rotated.
+        norm_np = norm_kpts.squeeze(0).cpu().numpy()  # (K, 2)
+        n_kpts = norm_np.shape[0]
+
+        needs_rot180 = False
+        if n_kpts == 68:  # Only auto-detect for 68-kpt source
+            eyes_y = norm_np[36:48, 1].mean()
+            mouth_y = norm_np[48:68, 1].mean()
+            leye_x = norm_np[36:42, 0].mean()
+            reye_x = norm_np[42:48, 0].mean()
+            y_inverted = eyes_y > mouth_y  # eyes below mouth
+            x_inverted = leye_x > reye_x   # L-eye right of R-eye
+            needs_rot180 = y_inverted and x_inverted
+
+        if needs_rot180:
+            # Rotate 180 in normalized [0,1] space: flip both axes
+            norm_kpts[..., 0] = 1.0 - norm_kpts[..., 0]
+            norm_kpts[..., 1] = 1.0 - norm_kpts[..., 1]
+
+        input_kpts_flat = norm_kpts.contiguous().view(1, -1)
         predicted_kpts_norm_structured = model(input_kpts_flat)
-        
-        # Denormalize to get predictions in pixel coordinates
-        denormalized_preds = denormalize_keypoints_bbox(predicted_kpts_norm_structured, bbox_tensor)
-        
+
+        if needs_rot180:
+            # Undo rotation on output
+            predicted_kpts_norm_structured[..., 0] = 1.0 - predicted_kpts_norm_structured[..., 0]
+            predicted_kpts_norm_structured[..., 1] = 1.0 - predicted_kpts_norm_structured[..., 1]
+
+        denormalized_preds = denormalize_keypoints_bbox(
+            predicted_kpts_norm_structured, bbox_tensor
+        )
+
     return denormalized_preds.squeeze(0).cpu().numpy()
 
 def plot_keypoints_on_ax(ax, keypoints, instance_color='r', show_indices=True):
